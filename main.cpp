@@ -1,6 +1,9 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+// file library
+#include <fstream> 
+#include <sstream>
 #include "Student.h"
 
 using namespace std;
@@ -10,8 +13,52 @@ bool compareByGPA(const Student& a, const Student& b) {
     return a.getGpa() > b.getGpa();
 }
 
+// Function to load data when the program starts
+void loadFromFile(vector<Student>& StudentList) {
+    ifstream inFile("students.txt");
+    if(!inFile) return;
+    
+    string line;
+    while (getline(inFile, line)) {
+        if (line.empty()) continue;
+        
+        stringstream ss(line);
+        string idStr, name, gpaStr, courseName;
+        
+        getline(ss, idStr, ',');
+        getline(ss, name, ',');
+        getline(ss, gpaStr, ',');
+        
+        if (!idStr.empty() && !name.empty() &&  !gpaStr.empty()) {
+        // change texts to numbers and return student
+            Student s(stoi(idStr), name, stod(gpaStr));
+        // Read any courses on the line    
+            while (getline(ss, courseName, ',')) {
+                if (!courseName.empty()) s.enrollCourse(courseName);
+            }
+            StudentList.push_back(s);
+        }
+    }
+    inFile.close();
+}
+
+
+// Function to save data in a text file
+void saveToFile(const vector<Student>& StudentList) {
+    ofstream outFile("students.txt");
+    for (const auto& s : StudentList) {
+// Use function i added in Student.h
+        outFile << s.toFileString() << endl;
+    }
+    outFile.close();
+}
+
 int main() {
+ // container STL    
     vector<Student> studentList;
+ // Load saved data before   
+    loadFromFile(studentList);
+    
     int choice;
 
     do {
@@ -33,8 +80,13 @@ int main() {
 
             cout << "Enter ID: "; cin >> id;
             cout << "Enter Name: "; cin.ignore(); getline(cin, name);
-            cout << "Enter GPA (0.0 - 4.0): "; cin >> gpa;
-
+            
+        // condition for GPA    
+            do {
+                cout << "Enter GPA (0.0 - 4.0): "; cin >> gpa; 
+                if (gpa < 0 || gpa > 4) cout << "Invalid GPA must be 0.0-4.0" << endl;
+            } while (gpa < 0 || gpa > 4);
+            
             studentList.push_back(Student(id, name, gpa));
             cout << "Student added successfully " << endl;
 
@@ -54,7 +106,13 @@ int main() {
         } else if (choice == 4) {
             int searchId;
             cout << "Enter Stutend ID to eenroll: ";
-            cin >> searchId;
+            
+            if (!(cin >> searchId)) {
+                cin.clear();
+                cin.ignore(1000, '\n');
+                cout << "Invalid ID " << endl;
+                continue;
+            }
         
             bool found = false;
             // We pass by the students
@@ -62,11 +120,13 @@ int main() {
                 if (s.getId() == searchId) {
                     string courseName;
                     cout << "Enter Course Name: ";
-                    cin.ignore();
-                    getline(cin, courseName);
-                    s.enrollCourse(courseName);
+                    cin.ignore(1000, '\n');
                     
-                    cout << "Course enrolled successfully" << endl;
+                    getline(cin, courseName);
+                    if (!courseName.empty()) {
+                        s.enrollCourse(courseName);
+                        cout << "Course enrolled successfully" << endl;
+                    }
                     found = true;
                     break;
             } 
@@ -91,7 +151,9 @@ int main() {
             if (!found) cout << "Student not found" << endl;
         }
     } while (choice != 6);
-    cout << "Exiting program..." << endl;
+// Save data before close program    
+    saveToFile(studentList);
+    cout << "Data saved. Exiting program..." << endl;
     
 
     return 0;

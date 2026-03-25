@@ -8,12 +8,14 @@ using namespace std;
 class Person {
   protected:
     string name;
+// to make it available for inheritance
+    int id;
 
-  public:
+   public:
 // Constructor {set the name when creating the person}
-    Person(string n) : name(n) {}
+    Person(int i, string n) : id(i), name(n) {}
     virtual void displayInfo() {
-      cout << "Name: " << name << endl;
+      cout << "ID: " << id << " | Name: " << name << endl;
     } 
     virtual ~Person() {}
 };
