@@ -34,6 +34,8 @@ This project was developed as an individual assignment for the Digital Egyptians
 **Student_Management_UML.pdf:** Detailed class diagram.
 **students.txt:** Database file (Auto-generated).
 
+* [View UML Diagram](./Student_Management_UML.pdf)
+
 ## How to Run
 1. Clone the repository.
 2. Compile using: `g++ main.cpp -o student_app`.
