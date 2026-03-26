@@ -4,11 +4,13 @@
 // file library
 #include <fstream> 
 #include <sstream>
+// Letter check
+#include <cctype>
 #include "Student.h"
 
 using namespace std;
 
-// function sort students by GPA (from highest to lowest)
+// function sort students by GPA (highest to lowest)
 bool compareByGPA(const Student& a, const Student& b) {
     return a.getGpa() > b.getGpa();
 }
@@ -62,96 +64,173 @@ int main() {
     int choice;
 
     do {
-        cout << "--- Student Management System ---" << endl;
+        cout << "\n--- Student Management System ---" << endl;
         cout << "1. Add Student" << endl;
-        cout << "2. Display All Students" << endl;
-        cout << "3. Sort Students by GPA" << endl;
-        cout << "4. Enroll in Course (Search by ID)" << endl;
-        cout << "5. Delete Student (by ID)" << endl;
-        cout << "6. Exit" << endl;
+        cout << "2. Remove Student" << endl;
+        cout << "3. Search Student" << endl;
+        cout << "4. Display All Students" << endl;
+        cout << "5. Enroll Student in Course" << endl;
+        cout << "6. Show Student Courses" << endl;
+        cout << "7. Sort Students by GPA" << endl;
+        cout << "8. Exit" << endl;
         cout << "----------------------------------" << endl;
         cout << "Enter your choice: ";
-        cin >> choice;
-
+        
+        if (!(cin >> choice)) {
+            cin.clear();
+            cin.ignore(1000, '\n');
+            cout << "Invalid input! Please enter a number (1-8) " << endl;
+            continue;
+        }
+        
+    // Add Student    
         if (choice == 1) {
             int id;
             string name;
             double gpa;
 
-            cout << "Enter ID: "; cin >> id;
-            cout << "Enter Name: "; cin.ignore(); getline(cin, name);
-            
-        // condition for GPA    
-            do {
-                cout << "Enter GPA (0.0 - 4.0): "; cin >> gpa; 
-                if (gpa < 0 || gpa > 4) cout << "Invalid GPA must be 0.0-4.0" << endl;
-            } while (gpa < 0 || gpa > 4);
-            
-            studentList.push_back(Student(id, name, gpa));
-            cout << "Student added successfully " << endl;
-
-        } else if(choice == 2) {
-            cout << "\n--- All Registered Student ---" << endl;
-
-            if (studentList.empty()) cout << "No students found " << endl;
-            for (auto& s : studentList) {
-                s.displayInfo();
-            }
-
-        } else if (choice == 3) {
-            sort(studentList.begin(), studentList.end(), compareByGPA);
-            cout << "Student sorted by GPA (Highest to Lowest)" << endl;
-            
-    // search about specify element    
-        } else if (choice == 4) {
-            int searchId;
-            cout << "Enter Stutend ID to eenroll: ";
-            
-            if (!(cin >> searchId)) {
+            cout << "Enter Student ID: ";
+            while (!(cin >> id)) {
+                cout << "Invalid ID! Please enter a numeric ID";
                 cin.clear();
                 cin.ignore(1000, '\n');
-                cout << "Invalid ID " << endl;
+            }
+        // Constraint: Unique ID check    
+            bool idExists = false;
+            for (const auto& s : studentList) {
+                if (s.getId() == id) {
+                    idExists = true;
+                    break;
+                }
+            }
+            if (idExists) {
+                cout << "Error : ID already exists" << endl;
+            // back to the beginning of menu and doesn't add the student
                 continue;
             }
+        // Name must be letters only
+            cin.ignore(1000, '\n');
+            while (true) {
+                cout << "Enter Name: ";
+                getline(cin, name);
+
+                bool isAllAlpha = true;
+                for (char c : name) {
+                    if (!isalpha(c) && !isspace(c)) {
+                        isAllAlpha = false;
+                        break;
+                    }
+                }
+                if (!name.empty() && isAllAlpha) break;
+                cout << "Invalid Name! Please use letters only" << endl;
+            }
+            
+            
+        // condition for GPA must be numeric between 0-4
+            while (true) {
+                cout << "Enter GPA (0.0 - 4.0): "; 
+                if (cin >> gpa && gpa >= 0 && gpa <= 4) {
+                    break;
+                } else {
+                    cout << "Invalid GPA must be 0.0-4.0" << endl;
+                    cin.clear();
+                    cin.ignore(1000, '\n');
+                }    
+            }
+            studentList.push_back(Student(id, name, gpa));
+            cout << "Student added successfully " << endl;
+            
+    // Remove Student        
+        } else if(choice == 2) {
+            int deleteId;
+            cout << "Enter Student ID to remove: ";
+            cin >> deleteId;
+            
+            auto it = find_if(studentList.begin(), studentList.end(), [&](const Student& s) {
+                return s.getId() == deleteId;
+            });
+            if (it != studentList.end()) {
+                studentList.erase(it);
+                cout << "Student removed successfully" << endl;
+            } else cout << "Student not found" << endl;
+            
+    // Search Student        
+        } else if (choice == 3) {
+            int SearchId;
+            cout << "Enter ID to search: ";
+            cin >> SearchId;
+            
+            bool found = false;
+            for (auto& s : studentList) {
+                if (s.getId() == SearchId) {
+                    s.displayInfo();
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) cout << "Student not found " << endl;
+            
+    // Display All            
+        } else if (choice == 4) {
+            cout << "\n--- List of All Student ---" << endl;
+            if (studentList.empty()) cout << "No Student found " << endl;
+            for (auto& s : studentList) s.displayInfo();
+            
+    // Enroll Student in Course    
+        } else if (choice == 5) {
+            int id;
+            cout << "Enter Stutend ID: ";
+            cin >> id;
         
             bool found = false;
             // We pass by the students
             for (auto& s : studentList) {
-                if (s.getId() == searchId) {
+                if (s.getId() == id) {
                     string courseName;
                     cout << "Enter Course Name: ";
                     cin.ignore(1000, '\n');
                     
                     getline(cin, courseName);
-                    if (!courseName.empty()) {
-                        s.enrollCourse(courseName);
+                // Check if student already enrolled    
+                    if (s.enrollCourse(courseName)) {
                         cout << "Course enrolled successfully" << endl;
-                    }
+                    } else {
+                        cout << "Error: Student is already enrolled in this course" << endl;
+                    }   
                     found = true;
                     break;
             } 
         } 
         if (!found) cout << "Stutend not found" << endl;
-        
-        } else if (choice == 5) {
-            int deleteId;
-            cout << "Enter Student ID to delete: ";
-            cin >> deleteId;
+
+    // Show Student Courses    
+        } else if (choice == 6) {
+            int id;
+            cout << "Enter Student ID: ";
+            cin >> id;
             
             bool found = false;
             
-            for (auto it = studentList.begin(); it != studentList.end(); ++it) {
-                if ( it -> getId() == deleteId ) {
-                    studentList.erase(it);
-                    cout << "\n Student with ID " << deleteId << " deleted successfully." << endl;
+            for (auto& s : studentList) {
+                if (s.getId() == id ) {
+                    cout << "\n--- Student Course Record ---" << endl;
+                    cout << "ID: " << s.getId() << endl;
+                    cout << "Name: " << s.getName() << endl;
+           // Courses are displayed        
+                    s.displayCoursesOnly();
                     found = true;
                     break;
                 }
             }
             if (!found) cout << "Student not found" << endl;
+            
+    // Sort by GPA        
+        } else if (choice == 7) {
+            sort(studentList.begin(), studentList.end(), compareByGPA);
+            cout << "Students sorted by GPA. Use option 4 to view" << endl;
         }
-    } while (choice != 6);
-// Save data before close program    
+    } while (choice != 8);
+   // Save data before close program    
     saveToFile(studentList);
     cout << "Data saved. Exiting program..." << endl;
     

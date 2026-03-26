@@ -14,9 +14,7 @@ class Person {
    public:
 // Constructor {set the name when creating the person}
     Person(int i, string n) : id(i), name(n) {}
-    virtual void displayInfo() {
-      cout << "ID: " << id << " | Name: " << name << endl;
-    } 
+    virtual void displayInfo() = 0;
     virtual ~Person() {}
 };
 

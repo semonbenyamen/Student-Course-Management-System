@@ -19,18 +19,31 @@ public:
     string getName() const { return name; }
 
  // Enrollment { Function to add a course }
-    void enrollCourse(string courseName) {
- // Automatically stop duplicate
-        courses.insert(courseName);
+    bool enrollCourse(string courseName) {
+        auto result = courses.insert(courseName);
+// returns true if added for first time, and false if it already exists.        
+        return result.second;
     }
-
+    
+// Display all information
     void displayInfo() override {
         cout << "ID: " << id << " | Name: " << name << " | GPA: " << gpa << endl;
+        displayCoursesOnly();
+    }
+    
+// Display Courses Only    
+    void displayCoursesOnly() const {
         cout << "Enrolled Courses: ";
-        if (courses.empty()) cout << "None";
-        for (const string& c : courses) cout << "[" << c << "] ";
+        if (courses.empty()) {
+            cout << "None";
+        } else {
+            for (const string& c : courses) {
+                cout << "[" << c << "] ";
+            }
+        }
         cout << endl << "_ _ _ _ _ _ _ _ _ _" << endl;
     }
+    
  // feature: converted data to a single line for saving to the file
     string toFileString() const {
         string s = to_string(id) + "," + name + "," + to_string(gpa);
