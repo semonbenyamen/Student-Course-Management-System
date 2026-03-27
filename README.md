@@ -19,6 +19,7 @@ This project was developed as an individual assignment for the Digital Egyptians
 **GPA Guard:** Ensures GPA is strictly between 0.0 and 4.0.
 **Duplicate Prevention:** Uses std::set to ensure a student cannot enroll in the same course twice.
 **Input Handling:** Gracefully handles invalid menu choices and non-numeric inputs.
+**Name Integrity:** Restricts student names to alphabetical characters only.
 
 ## Technical Concepts Applied
 **OOP Architecture:** Inheritance: Student class inherits from Person base class.
@@ -42,4 +43,4 @@ This project was developed as an individual assignment for the Digital Egyptians
 3. Run the executable: `./student_app`.
 
 ---
-**Developed by:** Semon (Digilians Trainee - Foundation of Software Project)
+**Developed by:** Semon Benyamin (Digilians Trainee - Foundation of Software Project)
